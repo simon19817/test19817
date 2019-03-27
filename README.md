@@ -1,2 +1,1 @@
-# just a test  
-Hello Git!
+How are you, world
