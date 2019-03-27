@@ -1,7 +1,0 @@
----
- # dc1 time zone
- time_zone: America/Los_Angeles
-
- # dc1 default gateway
- default_gateway: 172.25.11.254
- 
