@@ -1,0 +1,22 @@
+---
+- name: Build common config files
+  template: src=roles/common/templates/common.j2 dest={{ build_dir }}/{{ inventory_hostname }}_common.conf
+
+- name: Checking NETCONF connectivity
+  wait_for: host={{ management.ip_address }} port=22 timeout={{ ssh_timeout }}
+  register: netconf_result
+  ignore_errors: True
+
+- name: Upload common config
+  when: netconf_result|success
+  juniper_junos_config:
+    format: set
+    load: set
+    src: "{{ build_dir }}/{{ inventory_hostname }}_common.conf"
+    host: "{{ management.ip_address }}"
+    user: "{{ device_user }}"
+    passwd: "{{ device_passwd }}"
+    logfile: "{{ log_dir }}/common_log"
+
+- name: sleep for {{ commit_wait }} seconds and continue with play
+  wait_for: timeout="{{ commit_wait }}"

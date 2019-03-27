@@ -1,0 +1,55 @@
+system {
+    host-name {{ host_name }};
+    time-zone {{ time_zone }};
+    root-authentication {
+        encrypted-password "{{ root_authentication }}"; ## SECRET-DATA
+    }
+    login {
+        user lab {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaXx0tjr0cpYRFfvZKTd9/m/dDb.0"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ssh;
+        netconf {
+            ssh;
+        }
+    }
+    syslog {
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+chassis {
+    fpc 0 {
+        pic 0 {
+            number-of-ports 10;
+        }
+        lite-mode;
+    }
+    network-services enhanced-ip;
+}
+interfaces {
+    {{ management.name }} {
+        description "{{ management.description }}";
+        unit {{ management.unit }} {
+            family {{ management.family }} {
+                address {{ management.ip_address }}/{{ management.CIDR }};
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 0.0.0.0/0 next-hop {{ default_gateway }};
+    }
+}

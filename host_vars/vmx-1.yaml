@@ -1,0 +1,114 @@
+---
+# host_vars file for vmx-1
+ host_name: vmx-1
+ root_authentication: "$6$gYgAR.hf$RjA9jBVHSS/EFkKLOhWenmkpG42rhc2KIeDUVFaUlcFWhLra3rrX48vHvgwdkcZ2DoNG3I5cfRgB4jSig/ekz/"
+
+ users:
+   - name: lab
+     class: super-user
+     encrypted_password: "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaXx0tjr0cpYRFfvZKTd9/m/dDb.0"
+
+   - name: ops1
+     class: operator
+     encrypted_password: "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaXx0tjr0cpYRFfvZKTd9/m/dDb.0"
+
+ services:
+   - telnet
+   - ftp
+   - ssh
+   - netconf ssh
+
+ console:
+   ip_address: 172.25.11.254
+   port_number: 8601
+
+ management:
+   name: fxp0
+   unit: 0
+   family: inet
+   ip_address: 172.25.11.1
+   CIDR: 24
+   description: "Management Interface - DO NOT DELETE!"
+
+ interfaces:
+   - name: fxp0
+     description: "Management Interface - DO NOT DELETE!"
+     unit: 0
+     family: inet
+     ip_address: 172.25.11.1
+     CIDR: 24
+
+   - name: lo0
+     description: "Loopback Address"
+     unit: 0
+     family: inet
+     ip_address: 192.168.1.1
+     CIDR: 32
+
+   - name: ge-0/0/0
+     description: "Interface ge-0/0/0"
+     unit: 0
+     family: inet
+     ip_address: 172.33.0.1
+     CIDR: 24
+
+   - name: ge-0/0/1
+     description: "Interface ge-0/0/1"
+     unit: 0
+     family: inet
+     ip_address: 172.33.1.1
+     CIDR: 24
+
+   - name: ge-0/0/2
+     description: "Interface ge-0/0/2"
+     unit: 0
+     family: inet
+     ip_address: 10.12.12.1
+     CIDR: 30
+
+   - name: ge-0/0/3
+     description: "Interface ge-0/0/3"
+     unit: 0
+     family: inet
+     ip_address: 10.13.13.1
+     CIDR: 30
+
+ routing_op_asn: 65412
+
+ protocols:
+     bgp:
+       bgp_grp: core-bgp          # bgp group
+       l_addr: 192.168.1.1        # local-address
+       bgp_neighbor: 192.168.1.2  # bgp neighbor
+     ospf:
+       interface: ge-0/0/2.0      # ospf interface
+
+ pol_op:
+     plcy_stmt: static    # policy-option policy-statement
+
+ ri:  # routing instance
+     name: CE-1           # routing-instance name
+     intf: ge-0/0/3.0     # routing-instance interface
+     rd: 65412:1234       # route-distinguisher
+     vrf_t: target:65412:1111     # vrf-target
+
+ l3vpn_static:
+     ro_sr: 10.100.100.0/24 next-hop 10.13.13.2   # routing-options static-route
+
+ l3vpn_ospf:
+     po_ps: static        # policy-option policy-statement
+
+ l3vpn_bgp:
+     group: CE-1
+     peer_as: 1111
+     local_as: 65412
+     neighbor: 10.13.13.2
+
+ logical_sys:
+     name: Host1
+     address: 10.13.13.2/30
+     loopback: 10.100.100.1/32
+     bgp_grp: H1
+     local_as: 1111
+     neighbor: 10.13.13.1
+     static_route: 0.0.0.0/0 next-hop 10.13.13.1

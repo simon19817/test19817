@@ -1,0 +1,21 @@
+---
+
+- name: Install vMX license
+  hosts: vmx-1 vmx-2
+  gather_facts: no
+  connection: local
+  roles:
+    - Juniper.junos
+  tasks:
+    - name: Install License
+      juniper_junos_rpc:
+        host: "{{ inventory_hostname }}"
+        user: "{{ device_user }}"
+        passwd: "{{ device_passwd }}"
+        rpc: "request-license-add"
+        kwargs:
+          key_data: "JUNOS1019209 aeaqic aoakii lricyz yqfeeq yubmm4 ilby4t
+             cnztgb atambt ge3dqo jtbqfe yqkcjj 2w42lq
+             mvzaok bulqai q37zzo wx4he6 li22i4 hvjgod
+             wxjxij nxmbxc qxuce3 mp5c4i dtsafk algg7i
+             da"

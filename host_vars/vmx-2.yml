@@ -1,0 +1,27 @@
+---
+# host_vars file for vmx-2
+ host_name: vmx-2
+ root_authentication: "$6$gYgARhf$RjA9jBVHSS/EFkKLOhWenmkpG42rhc2KIeDUVFaUlcFWhLra3rrX48vHvgwdkcZ2DoNG3I5cfRgB4jSig/ekz/"
+
+ users:
+   - name: lab
+     class: super-user
+     encrypted_password: "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaXx0tjr0cpYRFfvZKTd9/m/dDb.0"
+
+ services:
+   - telnet
+   - ftp
+   - ssh
+   - netconf ssh
+
+ console:
+   ip_address: 172.25.11.254
+   port_number: 8603
+
+ management:
+   name: fxp0
+   description: "Management Interface - DO NOT DELETE!"
+   unit: 0
+   family: inet
+   ip_address: 172.25.11.2
+   CIDR: 24

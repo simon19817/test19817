@@ -1,0 +1,9 @@
+{# Set time zone #}
+set system time-zone {{ time_zone }}
+
+{# delete routing options block #}
+delete routing-options
+
+{# Add default route #}
+set routing-options static route 0.0.0.0/0 next-hop {{ default_gateway }}
+set routing-options autonomous-system {{ routing_op_asn }}

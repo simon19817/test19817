@@ -1,0 +1,18 @@
+---
+  - name: zeroize systems
+    hosts: all
+    roles:
+      - Juniper.junos
+    connection: local
+    gather_facts: no
+
+    tasks:
+    - name: "request-system-zeroize"
+      juniper_junos_rpc:
+        rpc: "request-system-zeroize"
+        formats: 'xml'
+        host: "{{ inventory_hostname }}"
+        user: "lab"
+        passwd: "lab123"
+      register: response
+      ignore_errors: True

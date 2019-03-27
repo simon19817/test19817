@@ -1,0 +1,1638 @@
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml noob-site.yml
+
+PLAY [NOOB Playbook] ************************************************************************************
+
+TASK [noob : Build NOOB config files] *******************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [noob : Checking NETCONF connectivity] *************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [noob : Upload Noob config] ************************************************************************
+skipping: [vmx-2]
+skipping: [vmx-1]
+
+PLAY RECAP **********************************************************************************************
+vmx-1                      : ok=2    changed=1    unreachable=0    failed=0
+vmx-2                      : ok=2    changed=1    unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ more zeroize.yml
+---
+  - name: zeroize systems
+    hosts: all
+    roles:
+      - Juniper.junos
+    connection: local
+    gather_facts: no
+
+    tasks:
+    - name: "request-system-zeroize"
+      juniper_junos_rpc:
+        rpc: "request-system-zeroize"
+        formats: 'xml'
+        host: "{{ inventory_hostname }}"
+        user: "lab"
+        passwd: "lab123"
+      register: response
+      ignore_errors: True
+
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml zeroize.yml
+
+PLAY [zeroize systems] **********************************************************************************
+
+TASK [request-system-zeroize] ***************************************************************************
+fatal: [vmx-2]: FAILED! => {"attrs": null, "changed": false, "failed": true, "format": "xml", "kwargs": null, "msg": "Unable to execute the RPC: <request-system-zeroize xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\" format=\"xml\"/>\n. Error: RpcError(severity: warning, bad_element: None, message: warning: ipsec-key-management subsystem not running - not needed by configuration.\nwarning: zeroizing re0)", "rpc": "request-system-zeroize"}
+...ignoring
+fatal: [vmx-1]: FAILED! => {"attrs": null, "changed": false, "failed": true, "format": "xml", "kwargs": null, "msg": "Unable to execute the RPC: <request-system-zeroize xmlns:nc=\"urn:ietf:params:xml:ns:netconf:base:1.0\" format=\"xml\"/>\n. Error: RpcError(severity: warning, bad_element: None, message: warning: ipsec-key-management subsystem not running - not needed by configuration.\nwarning: zeroizing re0)", "rpc": "request-system-zeroize"}
+...ignoring
+
+PLAY RECAP **********************************************************************************************
+vmx-1                      : ok=1    changed=0    unreachable=0    failed=0
+vmx-2                      : ok=1    changed=0    unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml noob-site.yml
+
+PLAY [NOOB Playbook] ************************************************************************************
+
+TASK [noob : Build NOOB config files] *******************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [noob : Checking NETCONF connectivity] *************************************************************
+fatal: [vmx-2]: FAILED! => {"changed": false, "elapsed": 11, "failed": true, "msg": "Timeout when waiting for 172.25.11.2:22"}
+...ignoring
+fatal: [vmx-1]: FAILED! => {"changed": false, "elapsed": 11, "failed": true, "msg": "Timeout when waiting for 172.25.11.1:22"}
+...ignoring
+
+TASK [noob : Upload Noob config] ************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+PLAY RECAP **********************************************************************************************
+vmx-1                      : ok=3    changed=1    unreachable=0    failed=0
+vmx-2                      : ok=3    changed=1    unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ ping vmx-2 -c 3
+PING vmx-2.sv.edu.juniper.net (172.25.11.2) 56(84) bytes of data.
+64 bytes from vmx-2.sv.edu.juniper.net (172.25.11.2): icmp_seq=1 ttl=64 time=0.267 ms
+64 bytes from vmx-2.sv.edu.juniper.net (172.25.11.2): icmp_seq=2 ttl=64 time=0.224 ms
+64 bytes from vmx-2.sv.edu.juniper.net (172.25.11.2): icmp_seq=3 ttl=64 time=0.274 ms
+
+--- vmx-2.sv.edu.juniper.net ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 0.224/0.255/0.274/0.022 ms
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ git status
+On branch master
+Your branch is ahead of 'origin/master' by 2 commits.
+  (use "git push" to publish your local commits)
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	configs/
+	get-facts.yml
+	group_vars/
+	host_vars/
+	log
+	noob-site.yml
+	roles/
+	zeroize.yml
+
+nothing added to commit but untracked files present (use "git add" to track)
+[lab@desktop Lab3]$
+
+lab@desktop Lab3]$
+[lab@desktop Lab3]$ git add .
+[lab@desktop Lab3]$ git commit -m "Completed Noob playbook"
+[master ae70034] Completed Noob playbook
+ 19 files changed, 426 insertions(+)
+ create mode 100644 configs/vmx-1_noob.conf
+ create mode 100644 configs/vmx-2_noob.conf
+ create mode 100644 get-facts.yml
+ create mode 100644 group_vars/all.yml
+ create mode 100644 group_vars/dc1.yml
+ create mode 100644 host_vars/vmx-1.yml
+ create mode 100644 host_vars/vmx-2.yml
+ create mode 100644 log
+ create mode 100644 noob-site.yml
+ create mode 100644 roles/noob/README.md
+ create mode 100644 roles/noob/defaults/main.yml
+ create mode 100644 roles/noob/handlers/main.yml
+ create mode 100644 roles/noob/meta/main.yml
+ create mode 100644 roles/noob/tasks/main.yml
+ create mode 100644 roles/noob/templates/noob.j2
+ create mode 100644 roles/noob/tests/inventory
+ create mode 100644 roles/noob/tests/test.yml
+ create mode 100644 roles/noob/vars/main.yml
+ create mode 100644 zeroize.yml
+[lab@desktop Lab3]$ git push origin master
+Username for 'http://gitlab.sv.edu.juniper.net:5080': root
+Password for 'http://root@gitlab.sv.edu.juniper.net:5080':
+Counting objects: 17, done.
+Delta compression using up to 12 threads.
+Compressing objects: 100% (16/16), done.
+Writing objects: 100% (17/17), 2.74 KiB | 2.74 MiB/s, done.
+Total 17 (delta 4), reused 0 (delta 0)
+To http://gitlab.sv.edu.juniper.net:5080/root/Lab3.git
+   e3fd905..ae70034  master -> master
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ git remote -v
+origin	http://gitlab.sv.edu.juniper.net:5080/root/Lab3.git (fetch)
+origin	http://gitlab.sv.edu.juniper.net:5080/root/Lab3.git (push)
+[lab@desktop Lab3]$ git branch
+* master
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ more add-vmx-license.yml
+---
+
+- name: Install vMX license
+  hosts: vmx-1 vmx-2
+  gather_facts: no
+  connection: local
+  roles:
+    - Juniper.junos
+  tasks:
+    - name: Install License
+      juniper_junos_rpc:
+        host: "{{ inventory_hostname }}"
+        user: "{{ device_user }}"
+        passwd: "{{ device_passwd }}"
+        rpc: "request-license-add"
+        kwargs:
+          key_data: "JUNOS1019209 aeaqic aoakii lricyz yqfeeq yubmm4 ilby4t
+             cnztgb atambt ge3dqo jtbqfe yqkcjj 2w42lq
+             mvzaok bulqai q37zzo wx4he6 li22i4 hvjgod
+             wxjxij nxmbxc qxuce3 mp5c4i dtsafk algg7i
+             da"
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml add-vmx-license.yml
+
+PLAY [Install vMX license] *****************************************************
+
+TASK [Install License] *********************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY RECAP *********************************************************************
+vmx-1                      : ok=1    changed=0    unreachable=0    failed=0
+vmx-2                      : ok=1    changed=0    unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ more host_vars/vmx-1.yml
+---
+# host_vars file for vmx-1
+ host_name: vmx-1
+ root_authentication: "$6$gYgAR.hf$RjA9jBVHSS/EFkKLOhWenmkpG42rhc2KIeDUVFaUlcFWhLra3rrX48vHvgwdkcZ
+2DoNG3I5cfRgB4jSig/ekz/"
+
+ users:
+   - name: lab
+     class: super-user
+     encrypted_password: "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaX
+x0tjr0cpYRFfvZKTd9/m/dDb.0"
+
+   - name: ops1
+     class: operator
+     encrypted_password: "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaX
+x0tjr0cpYRFfvZKTd9/m/dDb.0"
+
+ services:
+   - telnet
+   - ftp
+   - ssh
+   - netconf ssh
+
+ console:
+   ip_address: 172.25.11.254
+   port_number: 8601
+
+ management:
+   name: fxp0
+   unit: 0
+   family: inet
+   ip_address: 172.25.11.1
+   CIDR: 24
+   description: "Management Interface - DO NOT DELETE!"
+
+ interfaces:
+   - name: fxp0
+     description: "Management Interface - DO NOT DELETE!"
+     unit: 0
+     family: inet
+     ip_address: 172.25.11.1
+     CIDR: 24
+
+   - name: lo0
+     description: "Loopback Address"
+     unit: 0
+     family: inet
+     ip_address: 192.168.1.1
+     CIDR: 32
+
+   - name: ge-0/0/0
+     description: "Interface ge-0/0/0"
+     unit: 0
+     family: inet
+     ip_address: 172.33.0.1
+     CIDR: 24
+
+   - name: ge-0/0/1
+     description: "Interface ge-0/0/1"
+     unit: 0
+     family: inet
+     ip_address: 172.33.1.1
+     CIDR: 24
+
+   - name: ge-0/0/2
+     description: "Interface ge-0/0/2"
+     unit: 0
+     family: inet
+     ip_address: 10.12.12.1
+     CIDR: 30
+
+   - name: ge-0/0/3
+     description: "Interface ge-0/0/3"
+     unit: 0
+     family: inet
+     ip_address: 10.13.13.1
+     CIDR: 30
+
+ routing_op_asn: 65412
+
+ protocols:
+     bgp:
+       bgp_grp: core-bgp          # bgp group
+       l_addr: 192.168.1.1        # local-address
+       bgp_neighbor: 192.168.1.2  # bgp neighbor
+     ospf:
+       interface: ge-0/0/2.0      # ospf interface
+
+ pol_op:
+     plcy_stmt: static    # policy-option policy-statement
+
+ ri:  # routing instance
+     name: CE-1           # routing-instance name
+     intf: ge-0/0/3.0     # routing-instance interface
+     rd: 65412:1234       # route-distinguisher
+     vrf_t: target:65412:1111     # vrf-target
+
+ l3vpn_static:
+     ro_sr: 10.100.100.0/24 next-hop 10.13.13.2   # routing-options static-route
+
+ l3vpn_ospf:
+     po_ps: static        # policy-option policy-statement
+
+ l3vpn_bgp:
+     group: CE-1
+     peer_as: 1111
+     local_as: 65412
+     neighbor: 10.13.13.2
+
+ logical_sys:
+     name: Host1
+     address: 10.13.13.2/30
+     loopback: 10.100.100.1/32
+     bgp_grp: H1
+     local_as: 1111
+     neighbor: 10.13.13.1
+     static_route: 0.0.0.0/0 next-hop 10.13.13.1
+[lab@desktop Lab3]$ more host_vars/vmx-2.yml
+---
+# host_vars file for vmx-2
+ host_name: vmx-2
+ root_authentication: "$6$gYgAR.hf$RjA9jBVHSS/EFkKLOhWenmkpG42rhc2KIeDUVFaUlcFWhLra3rrX48vHvgwdkcZ
+2DoNG3I5cfRgB4jSig/ekz/"
+
+ users:
+   - name: lab
+     class: super-user
+     encrypted_password: "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaX
+x0tjr0cpYRFfvZKTd9/m/dDb.0"
+
+   - name: ops1
+     class: operator
+     encrypted_password: "$6$m0f26lnI$O/nhD8g54t6KuhoIYOONiI5Oaop77RlGy4mi3awNbK2UMH6oDGrNbCa5kiaX
+x0tjr0cpYRFfvZKTd9/m/dDb.0"
+
+ services:
+   - telnet
+   - ftp
+   - ssh
+   - netconf ssh
+
+ console:
+   ip_address: 172.25.11.254
+   port_number: 8603
+
+ management:
+   name: fxp0
+   unit: 0
+   family: inet
+   ip_address: 172.25.11.2
+   CIDR: 24
+   description: "Management Interface - DO NOT DELETE!"
+
+ interfaces:
+   - name: fxp0
+     description: "Management Interface - DO NOT DELETE!"
+     unit: 0
+     family: inet
+     ip_address: 172.25.11.2
+     CIDR: 24
+
+   - name: lo0
+     description: "Loopback Address"
+     unit: 0
+     family: inet
+     ip_address: 192.168.1.2
+     CIDR: 32
+
+   - name: ge-0/0/0
+     description: "Interface ge-0/0/0"
+     unit: 0
+     family: inet
+     ip_address: 172.33.0.2
+     CIDR: 24
+
+   - name: ge-0/0/1
+     description: "Interface ge-0/0/1"
+     unit: 0
+     family: inet
+     ip_address: 172.33.1.2
+     CIDR: 24
+
+   - name: ge-0/0/2
+     description: "Interface ge-0/0/2"
+     unit: 0
+     family: inet
+     ip_address: 10.12.12.2
+     CIDR: 30
+
+   - name: ge-0/0/3
+     description: "Interface ge-0/0/3"
+     unit: 0
+     family: inet
+     ip_address: 10.14.14.1
+     CIDR: 30
+
+ routing_op_asn: 65412
+
+ protocols:
+     bgp:
+       bgp_grp: core-bgp          # bgp group
+       l_addr: 192.168.1.2        # local-address
+       bgp_neighbor: 192.168.1.1  # bgp neighbor
+     ospf:
+       interface: ge-0/0/2.0      # ospf interface
+
+ pol_op:
+     plcy_stmt: static-rts        # policy-option policy-statement
+
+ ri:  # routing instance
+     name: CE-2           # routing-instance name
+     intf: ge-0/0/3.0     # routing-instance interface
+     rd: 65412:1234       # route-distinguisher
+     vrf_t: target:65412:1111     # vrf-target
+
+ l3vpn_static:
+     ro_sr: 10.100.100.0/24 next-hop 10.14.14.2   # routing-options static route
+
+ l3vpn_ospf:
+     po_ps: static-rts        # policy-option policy-statement
+
+ l3vpn_bgp:
+     group: CE-2
+     peer_as: 2222
+     local_as: 65412
+     neighbor: 10.14.14.2
+
+ logical_sys:
+     name: Host2
+     address: 10.14.14.2/30
+     loopback: 10.101.101.1/32
+     bgp_grp: H2
+     local_as: 2222
+     neighbor: 10.14.14.1
+     static_route: 0.0.0.0/0 next-hop 10.14.14.1
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ more site1.yml
+---
+  - name: Common Configuration
+    hosts: all
+    roles:
+      - Juniper.junos
+      - common
+    connection: local
+    gather_facts: no
+
+    pre_tasks:
+    - name: Delete log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: absent
+      run_once: true
+
+    - name: Create log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: directory
+        mode: 0755
+      run_once: true
+
+    - name: Delete Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: absent
+      run_once: true
+
+    - name: Create Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: directory
+        mode: 0755
+      run_once: true
+[lab@desktop Lab3]$
+
+sli@~/2019-new/course-2019/ajaut/Lab3-ansible:%ansible-galaxy init roles/common
+- roles/common was created successfully
+sli@~/2019-new/course-2019/ajaut/Lab3-ansible:%ls roles/
+common  noob
+sli@~/2019-new/course-2019/ajaut/Lab3-ansible:%
+
+[lab@desktop Lab3]$ ansible-galaxy init roles/common
+- roles/common was created successfully
+[lab@desktop Lab3]$ ls roles/
+common  noob
+[lab@desktop Lab3]$ cp start/roles/common/tasks/main.yml roles/common/tasks/main.yml
+cp: overwrite \u2018roles/common/tasks/main.yml\u2019? yes
+[lab@desktop Lab3]$ pycharm roles/common/tasks/main.yml
+[lab@desktop Lab3]$ cp start/roles/common/templates/common.j2 roles/common/templates/
+[lab@desktop Lab3]$ pycharm roles/common/templates/common.j2
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml site1.yml
+
+PLAY [Common Configuration] **********************************************************************
+
+TASK [Delete log file structure] *****************************************************************
+ok: [vmx-2]
+
+TASK [Create log file structure] *****************************************************************
+changed: [vmx-2]
+
+TASK [Delete Build file structure] ***************************************************************
+changed: [vmx-2]
+
+TASK [Create Build file structure] ***************************************************************
+changed: [vmx-2]
+
+TASK [common : Build common config files] ********************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : Checking NETCONF connectivity] ****************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [common : Upload common config] *************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : sleep for 5 seconds and continue with play] ***************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY RECAP ***************************************************************************************
+vmx-1                      : ok=4    changed=2    unreachable=0    failed=0
+vmx-2                      : ok=8    changed=5    unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ more site1.yml
+---
+  - name: Common Configuration
+    hosts: all
+    roles:
+      - Juniper.junos
+      - common
+    connection: local
+    gather_facts: no
+
+    pre_tasks:
+    - name: Delete log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: absent
+      run_once: true
+
+    - name: Create log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: directory
+        mode: 0755
+      run_once: true
+
+    - name: Delete Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: absent
+      run_once: true
+
+    - name: Create Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: directory
+        mode: 0755
+      run_once: true
+
+  - name: dc1 configuration
+    hosts: dc1
+    roles:
+      - dc1
+    connection: local
+    gather_facts: no
+
+
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml site1.yml
+
+PLAY [Common Configuration] **********************************************************************
+
+TASK [Delete log file structure] *****************************************************************
+changed: [vmx-2]
+
+TASK [Create log file structure] *****************************************************************
+changed: [vmx-2]
+
+TASK [Delete Build file structure] ***************************************************************
+changed: [vmx-2]
+
+TASK [Create Build file structure] ***************************************************************
+changed: [vmx-2]
+
+TASK [common : Build common config files] ********************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : Checking NETCONF connectivity] ****************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [common : Upload common config] *************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [common : sleep for 5 seconds and continue with play] ***************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [dc1 configuration] *************************************************************************
+
+TASK [dc1 : Build dc1 config files] **************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : Checking NETCONF connectivity] *******************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [dc1 : Upload dc1 config] *******************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [dc1 : sleep for 5 seconds and continue with play] ******************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY RECAP ***************************************************************************************
+vmx-1                      : ok=8    changed=3    unreachable=0    failed=0
+vmx-2                      : ok=12   changed=7    unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ cp -rf start/roles/routers/ roles/routers/
+[lab@desktop Lab3]$ ls roles/
+common  dc1  noob  routers
+[lab@desktop Lab3]$ ls roles/routers/
+defaults  handlers  meta  README.md  tasks  templates  tests  vars
+[lab@desktop Lab3]$ more roles/routers/templates/routers.j2
+{# Add interfaces #}
+{% for interface in interfaces %}
+set interfaces {{ interface.name }} description "{{ interface.description }}"
+set interfaces {{ interface.name }} unit {{ interface.unit }} family {{ interface.family }} address {{ interface.ip_ad
+dress }}/{{ interface.CIDR }}
+{% endfor %}
+[lab@desktop Lab3]$
+
+
+[lab@desktop ~]$ cd AJAUT/
+[lab@desktop AJAUT]$ cd Lab3
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ cp -rf start/roles/routers/ roles/routers/
+[lab@desktop Lab3]$ ls roles/
+common  dc1  noob  routers
+[lab@desktop Lab3]$ ls roles/routers/
+defaults  handlers  meta  README.md  tasks  templates  tests  vars
+[lab@desktop Lab3]$ more roles/routers/templates/routers.j2
+{# Add interfaces #}
+{% for interface in interfaces %}
+set interfaces {{ interface.name }} description "{{ interface.description }}"
+set interfaces {{ interface.name }} unit {{ interface.unit }} family {{ interface.family }} address {{ interface.ip_ad
+dress }}/{{ interface.CIDR }}
+{% endfor %}
+[lab@desktop Lab3]$ pycharm site1.yml
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml site1.yml
+
+PLAY [Common Configuration] ******************************************************************************************
+
+TASK [Delete log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Create log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Delete Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [Create Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [common : Build common config files] ****************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : Checking NETCONF connectivity] ************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [common : Upload common config] *********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : sleep for 5 seconds and continue with play] ***********************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [dc1 configuration] *********************************************************************************************
+
+TASK [dc1 : Build dc1 config files] **********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : Checking NETCONF connectivity] ***************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [dc1 : Upload dc1 config] ***************************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : sleep for 5 seconds and continue with play] **************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [routers configuration] *****************************************************************************************
+
+TASK [routers : Build router config files] ***************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [routers : Checking NETCONF connectivity] ***********************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [routers : Upload router config] ********************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [routers : sleep for 5 seconds and continue with play] **********************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY RECAP ***********************************************************************************************************
+vmx-1                      : ok=12   changed=6    unreachable=0    failed=0
+vmx-2                      : ok=16   changed=10   unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ more site1.yml
+---
+  - name: Common Configuration
+    hosts: all
+    roles:
+      - Juniper.junos
+      - common
+    connection: local
+    gather_facts: no
+
+    pre_tasks:
+    - name: Delete log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: absent
+      run_once: true
+
+    - name: Create log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: directory
+        mode: 0755
+      run_once: true
+
+    - name: Delete Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: absent
+      run_once: true
+
+    - name: Create Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: directory
+        mode: 0755
+      run_once: true
+
+  - name: dc1 configuration
+    hosts: dc1
+    roles:
+      - dc1
+    connection: local
+    gather_facts: no
+
+  - name: routers configuration
+    hosts: routers
+    roles:
+      - routers
+    connection: local
+    gather_facts: no
+
+
+[lab@desktop Lab3]$
+
+
+[lab@desktop Lab3]$ cp -rf start/roles/mpls/ roles/mpls
+[lab@desktop Lab3]$ cp -rf start/roles/l3vpn-static/ roles/
+[lab@desktop Lab3]$ ls -l roles
+total 0
+drwxrwxr-x 10 lab lab 126 Mar 26 23:02 common
+drwxrwxr-x 10 lab lab 126 Mar 26 23:16 dc1
+drwxrwxr-x  9 lab lab 114 Mar 26 23:36 l3vpn-static
+drwxrwxr-x  9 lab lab 114 Mar 26 23:36 mpls
+drwxrwxr-x 10 lab lab 126 Mar 26 22:02 noob
+drwxrwxr-x  9 lab lab 114 Mar 26 23:29 routers
+[lab@desktop Lab3]$ cp -rf start/roles/l3vpn-ospf/ roles/
+[lab@desktop Lab3]$ cp -rf start/roles/l3vpn-bgp/ roles/
+[lab@desktop Lab3]$ cp -rf start/roles/l3vpn-sys roles/
+cp: cannot stat \u2018start/roles/l3vpn-sys\u2019: No such file or directory
+[lab@desktop Lab3]$ cp -rf start/roles/logical-sys/ roles/
+[lab@desktop Lab3]$ ls roles/
+common  dc1  l3vpn-bgp  l3vpn-ospf  l3vpn-static  logical-sys  mpls  noob  routers
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ pycharm site1.yml
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml site1.yml
+
+PLAY [Common Configuration] ******************************************************************************************
+
+TASK [Delete log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Create log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Delete Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [Create Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [common : Build common config files] ****************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : Checking NETCONF connectivity] ************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [common : Upload common config] *********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : sleep for 5 seconds and continue with play] ***********************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [dc1 configuration] *********************************************************************************************
+
+TASK [dc1 : Build dc1 config files] **********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : Checking NETCONF connectivity] ***************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [dc1 : Upload dc1 config] ***************************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [dc1 : sleep for 5 seconds and continue with play] **************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [routers configuration] *****************************************************************************************
+
+TASK [routers : Build router config files] ***************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [routers : Checking NETCONF connectivity] ***********************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [routers : Upload router config] ********************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [routers : sleep for 5 seconds and continue with play] **********************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [logical sysyem configuration] **********************************************************************************
+
+TASK [logical-sys : Build logical system config files] ***************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [logical-sys : Checking NETCONF connectivity] *******************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [logical-sys : Upload mpls config] ******************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [logical-sys : sleep for 5 seconds and continue with play] ******************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [mpls configuration] ********************************************************************************************
+
+TASK [mpls : Build mpls config files] ********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [mpls : Checking NETCONF connectivity] **************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [mpls : Upload mpls config] *************************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [mpls : sleep for 5 seconds and continue with play] *************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [l3vpn static configuration] ************************************************************************************
+
+TASK [routers : Build router config files] ***************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [routers : Checking NETCONF connectivity] ***********************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [routers : Upload router config] ********************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [routers : sleep for 5 seconds and continue with play] **********************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY RECAP ***********************************************************************************************************
+vmx-1                      : ok=24   changed=9    unreachable=0    failed=0
+vmx-2                      : ok=28   changed=13   unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ more site1.yml
+---
+  - name: Common Configuration
+    hosts: all
+    roles:
+      - Juniper.junos
+      - common
+    connection: local
+    gather_facts: no
+
+    pre_tasks:
+    - name: Delete log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: absent
+      run_once: true
+
+    - name: Create log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: directory
+        mode: 0755
+      run_once: true
+
+    - name: Delete Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: absent
+      run_once: true
+
+    - name: Create Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: directory
+        mode: 0755
+      run_once: true
+
+  - name: dc1 configuration
+    hosts: dc1
+    roles:
+      - dc1
+    connection: local
+    gather_facts: no
+
+  - name: routers configuration
+    hosts: routers
+    roles:
+      - routers
+    connection: local
+    gather_facts: no
+
+  - name: logical sysyem configuration
+    hosts: vmx-1 vmx-2
+    roles:
+      - logical-sys
+    connection: local
+    gather_facts: no
+
+  - name: mpls configuration
+    hosts:  vmx-1 vmx-2
+    roles:
+      - mpls
+    connection: local
+    gather_facts: no
+
+  - name: l3vpn static configuration
+    hosts:  vmx-1 vmx-2
+    roles:
+      - routers
+    connection: local
+    gather_facts: no
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$ pycharm site1.yml
+[lab@desktop Lab3]$ ls roles/
+common  dc1  l3vpn-bgp  l3vpn-ospf  l3vpn-static  logical-sys  mpls  noob  routers
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml site1.yml
+
+PLAY [Common Configuration] ******************************************************************************************
+
+TASK [Delete log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Create log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Delete Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [Create Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [common : Build common config files] ****************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [common : Checking NETCONF connectivity] ************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [common : Upload common config] *********************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [common : sleep for 5 seconds and continue with play] ***********************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [dc1 configuration] *********************************************************************************************
+
+TASK [dc1 : Build dc1 config files] **********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : Checking NETCONF connectivity] ***************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [dc1 : Upload dc1 config] ***************************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : sleep for 5 seconds and continue with play] **************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [routers configuration] *****************************************************************************************
+
+TASK [routers : Build router config files] ***************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [routers : Checking NETCONF connectivity] ***********************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [routers : Upload router config] ********************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [routers : sleep for 5 seconds and continue with play] **********************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [logical sysyem configuration] **********************************************************************************
+
+TASK [logical-sys : Build logical system config files] ***************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [logical-sys : Checking NETCONF connectivity] *******************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [logical-sys : Upload mpls config] ******************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [logical-sys : sleep for 5 seconds and continue with play] ******************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [mpls configuration] ********************************************************************************************
+
+TASK [mpls : Build mpls config files] ********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [mpls : Checking NETCONF connectivity] **************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [mpls : Upload mpls config] *************************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [mpls : sleep for 5 seconds and continue with play] *************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [l3vpn static configuration] ************************************************************************************
+
+TASK [l3vpn-static : Build l3vpn-static config files] ****************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [l3vpn-static : Checking NETCONF connectivity] ******************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [l3vpn-static : Upload l3vpn-static config] *********************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [l3vpn-static : sleep for 5 seconds and continue with play] *****************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY RECAP ***********************************************************************************************************
+vmx-1                      : ok=24   changed=9    unreachable=0    failed=0
+vmx-2                      : ok=28   changed=13   unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ more site1.yml
+---
+  - name: Common Configuration
+    hosts: all
+    roles:
+      - Juniper.junos
+      - common
+    connection: local
+    gather_facts: no
+
+    pre_tasks:
+    - name: Delete log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: absent
+      run_once: true
+
+    - name: Create log file structure
+      file:
+        path: "{{ log_dir }}/log_common"
+        state: directory
+        mode: 0755
+      run_once: true
+
+    - name: Delete Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: absent
+      run_once: true
+
+    - name: Create Build file structure
+      file:
+        path: "{{ build_dir }}"
+        state: directory
+        mode: 0755
+      run_once: true
+
+  - name: dc1 configuration
+    hosts: dc1
+    roles:
+      - dc1
+    connection: local
+    gather_facts: no
+
+  - name: routers configuration
+    hosts: routers
+    roles:
+      - routers
+    connection: local
+    gather_facts: no
+
+  - name: logical sysyem configuration
+    hosts: vmx-1 vmx-2
+    roles:
+      - logical-sys
+    connection: local
+    gather_facts: no
+
+  - name: mpls configuration
+    hosts:  vmx-1 vmx-2
+    roles:
+      - mpls
+    connection: local
+    gather_facts: no
+
+  - name: l3vpn static configuration
+    hosts:  vmx-1 vmx-2
+    roles:
+      - l3vpn-static
+    connection: local
+    gather_facts: no
+[lab@desktop Lab3]$
+....
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [logical-sys : sleep for 5 seconds and continue with play] ******************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [mpls configuration] ********************************************************************************************
+
+TASK [mpls : Build mpls config files] ********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [mpls : Checking NETCONF connectivity] **************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [mpls : Upload mpls config] *************************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [mpls : sleep for 5 seconds and continue with play] *************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [l3vpn ospf configuration] **************************************************************************************
+
+TASK [l3vpn-ospf : Build l3vpn-ospf config files] ********************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [l3vpn-ospf : Checking NETCONF connectivity] ********************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [l3vpn-ospf : Upload l3vpn-ospf config] *************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [l3vpn-ospf : sleep for 5 seconds and continue with play] *******************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY RECAP ***********************************************************************************************************
+vmx-1                      : ok=24   changed=9    unreachable=0    failed=0
+vmx-2                      : ok=28   changed=13   unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml site2.yml
+
+PLAY [Common Configuration] ******************************************************************************************
+
+TASK [Delete log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Create log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Delete Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [Create Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [common : Build common config files] ****************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : Checking NETCONF connectivity] ************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [common : Upload common config] *********************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [common : sleep for 5 seconds and continue with play] ***********************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [dc1 configuration] *********************************************************************************************
+
+TASK [dc1 : Build dc1 config files] **********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : Checking NETCONF connectivity] ***************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [dc1 : Upload dc1 config] ***************************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : sleep for 5 seconds and continue with play] **************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [routers configuration] *****************************************************************************************
+
+TASK [routers : Build router config files] ***************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [routers : Checking NETCONF connectivity] ***********************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [routers : Upload router config] ********************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [routers : sleep for 5 seconds and continue with play] **********************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [logical sysyem configuration] **********************************************************************************
+
+TASK [logical-sys : Build logical system config files] ***************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [logical-sys : Checking NETCONF connectivity] *******************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [logical-sys : Upload mpls config] ******************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [logical-sys : sleep for 5 seconds and continue with play] ******************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [mpls configuration] ********************************************************************************************
+
+TASK [mpls : Build mpls config files] ********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [mpls : Checking NETCONF connectivity] **************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [mpls : Upload mpls config] *************************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [mpls : sleep for 5 seconds and continue with play] *************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [l3vpn ospf configuration] **************************************************************************************
+
+TASK [l3vpn-ospf : Build l3vpn-ospf config files] ********************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [l3vpn-ospf : Checking NETCONF connectivity] ********************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [l3vpn-ospf : Upload l3vpn-ospf config] *************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [l3vpn-ospf : sleep for 5 seconds and continue with play] *******************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY RECAP ***********************************************************************************************************
+vmx-1                      : ok=24   changed=9    unreachable=0    failed=0
+vmx-2                      : ok=28   changed=13   unreachable=0    failed=0
+
+[lab@desktop Lab3]$ docker run -it --rm -v $PWD:/project juniper/pyez-ansible:2.0.2 ansible-playbook -i test-hosts.yml site3.yml
+
+PLAY [Common Configuration] ******************************************************************************************
+
+TASK [Delete log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Create log file structure] *************************************************************************************
+changed: [vmx-2]
+
+TASK [Delete Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [Create Build file structure] ***********************************************************************************
+changed: [vmx-2]
+
+TASK [common : Build common config files] ****************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [common : Checking NETCONF connectivity] ************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [common : Upload common config] *********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [common : sleep for 5 seconds and continue with play] ***********************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [dc1 configuration] *********************************************************************************************
+
+TASK [dc1 : Build dc1 config files] **********************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : Checking NETCONF connectivity] ***************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [dc1 : Upload dc1 config] ***************************************************************************************
+changed: [vmx-2]
+changed: [vmx-1]
+
+TASK [dc1 : sleep for 5 seconds and continue with play] **************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [routers configuration] *****************************************************************************************
+
+TASK [routers : Build router config files] ***************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [routers : Checking NETCONF connectivity] ***********************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [routers : Upload router config] ********************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [routers : sleep for 5 seconds and continue with play] **********************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+PLAY [logical sysyem configuration] **********************************************************************************
+
+TASK [logical-sys : Build logical system config files] ***************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [logical-sys : Checking NETCONF connectivity] *******************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [logical-sys : Upload mpls config] ******************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [logical-sys : sleep for 5 seconds and continue with play] ******************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [mpls configuration] ********************************************************************************************
+
+TASK [mpls : Build mpls config files] ********************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [mpls : Checking NETCONF connectivity] **************************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [mpls : Upload mpls config] *************************************************************************************
+ok: [vmx-2]
+ok: [vmx-1]
+
+TASK [mpls : sleep for 5 seconds and continue with play] *************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY [l3vpn bgp configuration] ***************************************************************************************
+
+TASK [l3vpn-bgp : Build l3vpn-bgp config files] **********************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [l3vpn-bgp : Checking NETCONF connectivity] *********************************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+TASK [l3vpn-bgp : Upload l3vpn-bgp config] ***************************************************************************
+changed: [vmx-1]
+changed: [vmx-2]
+
+TASK [l3vpn-bgp : sleep for 5 seconds and continue with play] ********************************************************
+ok: [vmx-1]
+ok: [vmx-2]
+
+PLAY RECAP ***********************************************************************************************************
+vmx-1                      : ok=24   changed=9    unreachable=0    failed=0
+vmx-2                      : ok=28   changed=13   unreachable=0    failed=0
+
+[lab@desktop Lab3]$
+
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$ git add .
+[lab@desktop Lab3]$ git commit -m "Added configuration files"
+[master 23b7e9c] Added configuration files
+ 98 files changed, 1675 insertions(+), 118 deletions(-)
+ create mode 100644 add-vmx-license.yml
+ create mode 100644 configs/vmx-1_common.conf
+ create mode 100644 configs/vmx-1_dc1.conf
+ create mode 100644 configs/vmx-1_l3vpn-bgp.conf
+ create mode 100644 configs/vmx-1_logical-sys.conf
+ create mode 100644 configs/vmx-1_mpls.conf
+ delete mode 100644 configs/vmx-1_noob.conf
+ create mode 100644 configs/vmx-1_routers.conf
+ create mode 100644 configs/vmx-2_common.conf
+ create mode 100644 configs/vmx-2_dc1.conf
+ create mode 100644 configs/vmx-2_l3vpn-bgp.conf
+ create mode 100644 configs/vmx-2_logical-sys.conf
+ create mode 100644 configs/vmx-2_mpls.conf
+ delete mode 100644 configs/vmx-2_noob.conf
+ create mode 100644 configs/vmx-2_routers.conf
+ create mode 100644 logs/common_log
+ create mode 100644 logs/l3vpn-bgp_log
+ create mode 100644 logs/l3vpn-ospf_log
+ create mode 100644 logs/l3vpn-static_log
+ create mode 100644 logs/logical-sys_log
+ create mode 100644 logs/mpls_log
+ create mode 100644 roles/common/README.md
+ create mode 100644 roles/common/defaults/main.yml
+ create mode 100644 roles/common/handlers/main.yml
+ create mode 100644 roles/common/meta/main.yml
+ create mode 100644 roles/common/tasks/main.yml
+ create mode 100644 roles/common/templates/common.j2
+ create mode 100644 roles/common/tests/inventory
+ create mode 100644 roles/common/tests/test.yml
+ create mode 100644 roles/common/vars/main.yml
+ create mode 100644 roles/dc1/README.md
+ create mode 100644 roles/dc1/defaults/main.yml
+ create mode 100644 roles/dc1/handlers/main.yml
+ create mode 100644 roles/dc1/meta/main.yml
+ create mode 100644 roles/dc1/tasks/main.yml
+ create mode 100644 roles/dc1/templates/dc1.j2
+ create mode 100644 roles/dc1/tests/inventory
+ create mode 100644 roles/dc1/tests/test.yml
+ create mode 100644 roles/dc1/vars/main.yml
+ create mode 100644 roles/l3vpn-bgp/README.md
+ create mode 100644 roles/l3vpn-bgp/defaults/main.yml
+ create mode 100644 roles/l3vpn-bgp/handlers/main.yml
+ create mode 100644 roles/l3vpn-bgp/meta/main.yml
+ create mode 100644 roles/l3vpn-bgp/tasks/main.yml
+ create mode 100644 roles/l3vpn-bgp/templates/l3vpn-bgp.j2
+ create mode 100644 roles/l3vpn-bgp/tests/inventory
+ create mode 100644 roles/l3vpn-bgp/tests/test.yml
+ create mode 100644 roles/l3vpn-bgp/vars/main.yml
+ create mode 100644 roles/l3vpn-ospf/README.md
+ create mode 100644 roles/l3vpn-ospf/defaults/main.yml
+ create mode 100644 roles/l3vpn-ospf/handlers/main.yml
+ create mode 100644 roles/l3vpn-ospf/meta/main.yml
+ create mode 100644 roles/l3vpn-ospf/tasks/main.yml
+ create mode 100644 roles/l3vpn-ospf/templates/l3vpn-ospf.j2
+ create mode 100644 roles/l3vpn-ospf/tests/inventory
+ create mode 100644 roles/l3vpn-ospf/tests/test.yml
+ create mode 100644 roles/l3vpn-ospf/vars/main.yml
+ create mode 100644 roles/l3vpn-static/README.md
+ create mode 100644 roles/l3vpn-static/defaults/main.yml
+ create mode 100644 roles/l3vpn-static/handlers/main.yml
+ create mode 100644 roles/l3vpn-static/meta/main.yml
+ create mode 100644 roles/l3vpn-static/tasks/main.yml
+ create mode 100644 roles/l3vpn-static/templates/l3vpn-static.j2
+ create mode 100644 roles/l3vpn-static/tests/inventory
+ create mode 100644 roles/l3vpn-static/tests/test.yml
+ create mode 100644 roles/l3vpn-static/vars/main.yml
+ create mode 100644 roles/logical-sys/README.md
+ create mode 100644 roles/logical-sys/defaults/main.yml
+ create mode 100644 roles/logical-sys/handlers/main.yml
+ create mode 100644 roles/logical-sys/meta/main.yml
+ create mode 100644 roles/logical-sys/tasks/main.yml
+ create mode 100644 roles/logical-sys/templates/logical-sys.j2
+ create mode 100644 roles/logical-sys/tests/inventory
+ create mode 100644 roles/logical-sys/tests/test.yml
+ create mode 100644 roles/logical-sys/vars/main.yml
+ create mode 100644 roles/mpls/README.md
+ create mode 100644 roles/mpls/defaults/main.yml
+ create mode 100644 roles/mpls/handlers/main.yml
+ create mode 100644 roles/mpls/meta/main.yml
+ create mode 100644 roles/mpls/tasks/main.yml
+ create mode 100644 roles/mpls/templates/mpls.j2
+ create mode 100644 roles/mpls/tests/inventory
+ create mode 100644 roles/mpls/tests/test.yml
+ create mode 100644 roles/mpls/vars/main.yml
+ create mode 100644 roles/routers/README.md
+ create mode 100644 roles/routers/defaults/main.yml
+ create mode 100644 roles/routers/handlers/main.yml
+ create mode 100644 roles/routers/meta/main.yml
+ create mode 100644 roles/routers/tasks/main.yml
+ create mode 100644 roles/routers/templates/routers.j2
+ create mode 100644 roles/routers/tests/inventory
+ create mode 100644 roles/routers/tests/test.yml
+ create mode 100644 roles/routers/vars/main.yml
+ create mode 100644 site1.yml
+ create mode 100644 site2.yml
+ create mode 100644 site3.yml
+[lab@desktop Lab3]$ git push origin master
+Username for 'http://gitlab.sv.edu.juniper.net:5080': root
+Password for 'http://root@gitlab.sv.edu.juniper.net:5080':
+Counting objects: 13, done.
+Delta compression using up to 12 threads.
+Compressing objects: 100% (11/11), done.
+Writing objects: 100% (13/13), 2.79 KiB | 2.79 MiB/s, done.
+Total 13 (delta 3), reused 2 (delta 1)
+To http://gitlab.sv.edu.juniper.net:5080/root/Lab3.git
+   ae70034..23b7e9c  master -> master
+[lab@desktop Lab3]$ git push origin master
+Username for 'http://gitlab.sv.edu.juniper.net:5080': lab
+Password for 'http://lab@gitlab.sv.edu.juniper.net:5080':
+Everything up-to-date
+[lab@desktop Lab3]$
+[lab@desktop Lab3]$

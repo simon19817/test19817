@@ -1,0 +1,12 @@
+---
+  - name: NOOB Playbook
+    hosts: all
+    roles:
+      - Juniper.junos
+    connection: local
+    gather_facts: no
+
+    tasks:
+      - import_role:
+         name: noob
+         

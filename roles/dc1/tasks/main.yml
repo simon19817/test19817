@@ -1,0 +1,23 @@
+---
+# tasks file for dc1
+- name: Build dc1 config files
+  template: src=roles/dc1/templates/dc1.j2 dest={{ build_dir }}/{{ inventory_hostname }}_dc1.conf
+
+- name: Checking NETCONF connectivity
+  wait_for: host={{ management.ip_address }} port=22 timeout={{ ssh_timeout }}
+  register: netconf_result
+  ignore_errors: True
+
+- name: Upload dc1 config
+  when: netconf_result|success
+  juniper_junos_config:
+    format: set
+    load: set
+    src: "{{ build_dir }}/{{ inventory_hostname }}_dc1.conf"
+    host: "{{ management.ip_address }}"
+    user: "{{ device_user }}"
+    passwd: "{{ device_passwd }}"
+    logfile: "{{ log_dir }}/common_log"
+
+- name: sleep for {{ commit_wait }} seconds and continue with play
+  wait_for: timeout="{{ commit_wait }}"

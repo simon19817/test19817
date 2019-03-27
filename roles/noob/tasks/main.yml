@@ -1,0 +1,19 @@
+---
+- name: Build NOOB config files
+  template: src=roles/noob/templates/noob.j2 dest={{ build_dir }}/{{ inventory_hostname }}_noob.conf
+
+- name: Checking NETCONF connectivity
+  wait_for: host={{ management.ip_address }} port=22 timeout={{ ssh_timeout }}
+  register: netconf_result
+  ignore_errors: True
+
+- name: Upload Noob config
+  when: netconf_result|failed
+  juniper_junos_config:
+    load: override
+    src: "{{ build_dir }}/{{ inventory_hostname }}_noob.conf"
+    host: "{{ console.ip_address }}"
+    port: "{{ console.port_number }}"
+    mode: telnet
+    user: root
+    logfile: log
